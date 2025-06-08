@@ -1,17 +1,123 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Generator</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .theme-transition {
+            transition: all 0.3s ease;
+        }
+        .qr-container {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .qr-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .dark .qr-container {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+        .dark .qr-container:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+        }
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .dark .feature-card {
+            background: #20203a;
+        }
+        .light .feature-card {
+            background: linear-gradient(145deg, #ffffff, #f5f5f5);
+        }
+    </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200 text-gray-900 dark:text-white">
+<body class="bg-gray-50 dark:bg-[#1a1a2e] text-gray-900 dark:text-white min-h-screen">
+    <!-- Theme Switcher -->
+    
+
+    <!-- Header -->
+    <header class="text-center py-8">
+        <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">QR Code Generator</h1>
+        <p class="text-gray-600 dark:text-gray-400">Create, Scan, and Share QR Codes Instantly</p>
+    </header>
+
+    <!-- Features Section -->
+    <div class="max-w-6xl mx-auto px-4 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="feature-card p-6 rounded-xl shadow-lg">
+                <div class="text-2xl mb-2">🎨</div>
+                <h3 class="text-xl font-semibold mb-2">Customizable</h3>
+                <p class="text-gray-600 dark:text-gray-400">Create QR codes with custom colors and styles</p>
+            </div>
+            <div class="feature-card p-6 rounded-xl shadow-lg">
+                <div class="text-2xl mb-2">📱</div>
+                <h3 class="text-xl font-semibold mb-2">Mobile Ready</h3>
+                <p class="text-gray-600 dark:text-gray-400">Scan QR codes directly from your device</p>
+            </div>
+            <div class="feature-card p-6 rounded-xl shadow-lg">
+                <div class="text-2xl mb-2">⚡</div>
+                <h3 class="text-xl font-semibold mb-2">Instant</h3>
+                <p class="text-gray-600 dark:text-gray-400">Generate and download QR codes in seconds</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
     <div class="min-h-screen flex justify-center p-4">
         <!-- Left Ad Container -->
         <div class="lg:flex flex-col items-center justify-center w-1/5 p-4 relative opacity-0 lg:opacity-100 invisible lg:visible" style="min-width: 300px; min-height: 600px;">
-            <div class="bg-gray-100 dark:bg-gray-700 w-full h-full flex items-center justify-center rounded-lg shadow-md">
+            <div class="bg-gray-100 dark:bg-[#20203a] w-full h-full flex items-center justify-center rounded-lg shadow-md">
                 <!-- AdSense code commented out for local development -->
                 <!--
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6719104770577165"
@@ -31,20 +137,19 @@
         </div>
 
         <!-- Main Content Area -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-2xl lg:w-3/5">
+        <div class="bg-gray-100 dark:bg-[#20203a] rounded-2xl shadow-xl p-8 w-full max-w-2xl lg:w-3/5">
             <div class="flex justify-between items-center mb-8">
                 <div class="text-center flex-1">
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">QR Code Generator</h1>
                     <p class="text-gray-600 dark:text-gray-400">Create QR codes for your text, URLs, or contact information</p>
                 </div>
-                <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                    <svg class="w-6 h-6 text-gray-800 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                </button>
+                <div class="flex space-x-4">
+                    <button id="generateModeBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Generate</button>
+                    <button id="scanModeBtn" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-colors">Scan</button>
+                </div>
             </div>
             
-            <div class="space-y-6">
+            <div id="generatorSection" class="space-y-6">
                 <div class="input-section">
                     <div class="relative">
                         <div class="mb-4">
@@ -84,8 +189,8 @@
                     </div>
                 </div>
 
-                <div class="qr-section">
-                    <div id="qrDisplay" class="text-center mb-4"></div>
+                <div class="qr-section flex flex-col items-center">
+                    <div id="qrDisplay" class="text-center mx-auto mb-4"></div>
                     <div class="flex flex-col sm:flex-row justify-center gap-4">
                         <button 
                             id="downloadBtn" 
@@ -108,7 +213,7 @@
                     </div>
                 </div>
 
-                <div class="mt-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="mt-8 p-4 bg-gray-200 dark:bg-[#2a2a47] rounded-lg">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">QR Code Options</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -149,11 +254,26 @@
                     </div>
                 </div>
             </div>
+
+            <div id="scannerSection" class="hidden space-y-6">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Scan QR Code</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">Point your camera at a QR code to scan it.</p>
+                </div>
+                <div id="reader" class="w-full max-w-md mx-auto bg-gray-700 rounded-lg overflow-hidden"></div>
+                <div id="scannerResult" class="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white break-words hidden">
+                    <p class="font-semibold mb-2">Scanned Result:</p>
+                    <p id="scannedContent" class="text-blue-600 dark:text-blue-400"></p>
+                </div>
+                <div class="flex justify-center mt-4">
+                    <button id="stopScanBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 hidden">Stop Scan</button>
+                </div>
+            </div>
         </div>
 
         <!-- Right Ad Container -->
         <div class="lg:flex flex-col items-center justify-center w-1/5 p-4 relative opacity-0 lg:opacity-100 invisible lg:visible" style="min-width: 300px; min-height: 600px;">
-            <div class="bg-gray-100 dark:bg-gray-700 w-full h-full flex items-center justify-center rounded-lg shadow-md">
+            <div class="bg-gray-100 dark:bg-[#20203a] w-full h-full flex items-center justify-center rounded-lg shadow-md">
                 <!-- AdSense code commented out for local development -->
                 <!--
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6719104770577165"
@@ -172,7 +292,14 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 text-gray-600 dark:text-gray-400">
+        <p>Made with ❤️ for the community</p>
+    </footer>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

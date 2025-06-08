@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const qrDisplay = document.getElementById('qrDisplay');
     const downloadBtn = document.getElementById('downloadBtn');
     const copyBtn = document.getElementById('copyBtn');
-    const themeToggle = document.getElementById('themeToggle');
     const qrSize = document.getElementById('qrSize');
     const qrErrorCorrection = document.getElementById('qrErrorCorrection');
     const qrColorDark = document.getElementById('qrColorDark');
@@ -26,22 +25,95 @@ document.addEventListener('DOMContentLoaded', () => {
     const contactPhone = document.getElementById('contactPhone');
     const contactEmail = document.getElementById('contactEmail');
     const contactOrg = document.getElementById('contactOrg');
+
+    // New elements for scan functionality
+    const generateModeBtn = document.getElementById('generateModeBtn');
+    const scanModeBtn = document.getElementById('scanModeBtn');
+    const generatorSection = document.getElementById('generatorSection');
+    const scannerSection = document.getElementById('scannerSection');
+    const reader = document.getElementById('reader');
+    const scannerResult = document.getElementById('scannerResult');
+    const scannedContent = document.getElementById('scannedContent');
+    const stopScanBtn = document.getElementById('stopScanBtn');
     
     // Add toast container to body
     document.body.appendChild(toastContainer);
     
-    // Theme handling
-    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-    const currentTheme = localStorage.getItem('theme') || (prefersDarkScheme.matches ? 'dark' : 'light');
-    
-    if (currentTheme === 'dark') {
-        document.documentElement.classList.add('dark');
+    let html5QrcodeScanner; // Declare scanner instance globally (within DOMContentLoaded scope)
+
+    function initializeScanner() {
+        if (!html5QrcodeScanner) { // Only initialize if not already initialized
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader", 
+                { fps: 10, qrbox: {width: 250, height: 250} },
+                /* verbose= */ false
+            );
+
+            html5QrcodeScanner.render(onScanSuccess, onScanError).catch(err => {
+                console.error("Error starting scanner:", err);
+                showToast('Failed to start camera. Please ensure you have granted camera permissions.', 'error');
+            });
+        }
     }
-    
-    themeToggle.addEventListener('click', () => {
-        document.documentElement.classList.toggle('dark');
-        const isDark = document.documentElement.classList.contains('dark');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
+    function onScanSuccess(decodedText, decodedResult) {
+        console.log(`Code matched = ${decodedText}`, decodedResult);
+        scannedContent.textContent = decodedText;
+        scannerResult.classList.remove('hidden');
+        // Optionally stop scanning after a successful scan
+        // if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+        //     html5QrcodeScanner.stop().then(() => {
+        //         showToast('QR Code Scanned Successfully!', 'success');
+        //         stopScanBtn.classList.add('hidden');
+        //     }).catch(err => {
+        //         console.error("Failed to stop scanner.", err);
+        //     });
+        // }
+    }
+
+    function onScanError(errorMessage) {
+        // console.warn(`Code scan error = ${errorMessage}`);
+    }
+
+    // Mode switching logic
+    generateModeBtn.addEventListener('click', () => {
+        generatorSection.classList.remove('hidden');
+        scannerSection.classList.add('hidden');
+        generateModeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        generateModeBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+        scanModeBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+        scanModeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+            html5QrcodeScanner.stop().catch(err => console.error("Failed to stop scanner on mode switch:", err));
+        }
+        stopScanBtn.classList.add('hidden');
+        scannerResult.classList.add('hidden');
+        generateQRCode(); // Ensure QR code is generated when switching back
+    });
+
+    scanModeBtn.addEventListener('click', () => {
+        generatorSection.classList.add('hidden');
+        scannerSection.classList.remove('hidden');
+        scanModeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        scanModeBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+        generateModeBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+        generateModeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        
+        initializeScanner(); // Initialize and start scanner when scan mode is activated
+        stopScanBtn.classList.remove('hidden');
+    });
+
+    stopScanBtn.addEventListener('click', () => {
+        if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+            html5QrcodeScanner.stop().then(() => {
+                showToast('Scanner stopped.', 'info');
+                stopScanBtn.classList.add('hidden');
+                scannerResult.classList.add('hidden');
+            }).catch(err => {
+                console.error("Failed to stop scanner:", err);
+                showToast('Error stopping scanner.', 'error');
+            });
+        }
     });
     
     // Toast function
@@ -101,6 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial call to set correct section visibility
     toggleInputSections();
 
+    // Initial QR code generation on page load
+    setTimeout(generateQRCode, 100); // Added a small delay to ensure QRCode library is loaded
+
     // Event listener for QR code type change
     qrCodeType.addEventListener('change', () => {
         toggleInputSections();
@@ -143,6 +218,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function generateQRCode() {
+        if (typeof QRCode === 'undefined') {
+            console.error('QRCode library is not defined. Cannot generate QR code.');
+            showToast('QR Code library not loaded. Please try refreshing.', 'error');
+            return;
+        }
+
         let text = '';
         const selectedType = qrCodeType.value;
 
@@ -177,7 +258,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!text) {
-            showToast('Please enter content for the QR code', 'error');
+            // If text is empty, clear the display and hide buttons, do not show an error toast.
+            qrDisplay.innerHTML = '';
+            downloadBtn.classList.add('hidden');
+            copyBtn.classList.add('hidden');
             return;
         }
 
@@ -201,6 +285,13 @@ document.addEventListener('DOMContentLoaded', () => {
             colorLight: colorLight,
             correctLevel: QRCode.CorrectLevel[errorCorrection]
         });
+
+        // After QR code is generated, get the canvas element and center it
+        const qrCanvas = qrDisplay.querySelector('canvas');
+        if (qrCanvas) {
+            qrCanvas.style.display = 'block';
+            qrCanvas.style.margin = '0 auto';
+        }
 
         // Add logo if URL is provided
         if (logoDataUrl && !logoPreview.classList.contains('hidden')) {
@@ -281,74 +372,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (text) {
             navigator.clipboard.writeText(text)
                 .then(() => showToast('Text copied to clipboard!'))
-                .catch(err => showToast('Failed to copy text', 'error'));
+                .catch(err => showToast('Failed to copy text: ' + err, 'error'));
+        } else {
+            showToast('No text to copy.', 'error');
         }
     });
 
-    // Function to load AdSense ads with a delay
-    function loadAds() {
-        // Ad loading code commented out for local development
-        console.log('Ad loading disabled for local development');
-        /*
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-                try {
-                    // Check if adsbygoogle is available
-                    if (!window.adsbygoogle) {
-                        console.warn('AdSense script not loaded yet');
-                        return;
-                    }
+    // Initial call to set correct section visibility
+    toggleInputSections();
 
-                    // Load left ad
-                    const leftAdSlot = document.getElementById('left-ad-slot');
-                    if (leftAdSlot) {
-                        const container = leftAdSlot.closest('.lg\\:flex');
-                        if (container && container.offsetWidth > 0) {
-                            console.log('Loading left ad slot...');
-                            (window.adsbygoogle = window.adsbygoogle || []).push({
-                                callback: function() {
-                                    console.log('Left ad loaded successfully');
-                                },
-                                error: function(error) {
-                                    console.error('Error loading left ad:', error);
-                                }
-                            });
-                        } else {
-                            console.warn('Left ad container has no width');
-                        }
-                    }
+    // Initial QR code generation on page load
+    generateQRCode();
 
-                    // Load right ad
-                    const rightAdSlot = document.getElementById('right-ad-slot');
-                    if (rightAdSlot) {
-                        const container = rightAdSlot.closest('.lg\\:flex');
-                        if (container && container.offsetWidth > 0) {
-                            console.log('Loading right ad slot...');
-                            (window.adsbygoogle = window.adsbygoogle || []).push({
-                                callback: function() {
-                                    console.log('Right ad loaded successfully');
-                                },
-                                error: function(error) {
-                                    console.error('Error loading right ad:', error);
-                                }
-                            });
-                        } else {
-                            console.warn('Right ad container has no width');
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error in loadAds:', error);
-                }
-            }, 2000);
-        });
-        */
-    }
-
-    // Initial QR code generation on page load (if input has content)
-    if (qrInput.value.trim() !== '') {
-        generateQRCode();
-    }
-
-    // Call loadAds after initial setup
-    window.addEventListener('load', loadAds);
 });
+
+function loadAds() {
+    // Simulate ad loading for development
+    // In a real scenario, you'd load AdSense ads here
+    // For example:
+    // (adsbygoogle = window.adsbygoogle || []).push({});
+}
+
+// Load ads when the document is ready (if not already loaded by AdSense script)
+document.addEventListener('DOMContentLoaded', loadAds);
