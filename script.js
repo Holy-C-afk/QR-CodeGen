@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const qrDotColorGradientRotation = document.getElementById('qrDotColorGradientRotation');
     const qrDotColorGradientStart = document.getElementById('qrDotColorGradientStart');
     const qrDotColorGradientEnd = document.getElementById('qrDotColorGradientEnd');
-
+    
     // New elements for QR code types
     const qrCodeType = document.getElementById('qrCodeType');
     const textInputSection = document.getElementById('textInputSection');
@@ -72,9 +72,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const batchResults = document.getElementById('batchResults');
     const batchResultsGrid = document.getElementById('batchResultsGrid');
     const downloadBatchBtn = document.getElementById('downloadBatchBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const shareOptions = document.getElementById('shareOptions');
+    const historyList = document.getElementById('historyList');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const saveToHistoryBtn = document.getElementById('saveToHistoryBtn');
 
     let batchEntries = [];
     let batchQRs = [];
+    let qrHistory = JSON.parse(localStorage.getItem('qrHistory') || '[]');
+    const MAX_HISTORY_ITEMS = 10;
 
     function initializeScanner() {
         if (!html5QrcodeScanner) { // Only initialize if not already initialized
@@ -296,14 +303,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (org) text += `ORG:${org}\n`;
             text += `END:VCARD`;
         }
-        
+
         // If text is empty, clear the display and hide buttons/spinner
         if (!text) {
             qrDisplay.innerHTML = '';
             downloadBtn.classList.add('hidden');
             copyBtn.classList.add('hidden');
+            shareBtn.classList.add('hidden');
+            saveToHistoryBtn.classList.add('hidden');
             downloadBtn.style.opacity = '0';
             copyBtn.style.opacity = '0';
+            shareBtn.style.opacity = '0';
+            saveToHistoryBtn.style.opacity = '0';
             qrLoadingSpinner.classList.add('hidden');
             return;
         }
@@ -407,11 +418,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide spinner and show buttons after a short delay to ensure rendering
         setTimeout(() => {
             qrLoadingSpinner.classList.add('hidden');
-            downloadBtn.classList.remove('hidden');
-            copyBtn.classList.remove('hidden');
+        downloadBtn.classList.remove('hidden');
+        copyBtn.classList.remove('hidden');
+            shareBtn.classList.remove('hidden');
+            saveToHistoryBtn.classList.remove('hidden');
             downloadBtn.style.opacity = '1';
             copyBtn.style.opacity = '1';
-            showToast('QR Code generated successfully!');
+            shareBtn.style.opacity = '1';
+            saveToHistoryBtn.style.opacity = '1';
+        showToast('QR Code generated successfully!');
         }, 100); // Give a bit more time for rendering before hiding spinner
     }
 
@@ -419,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadBtn.addEventListener('click', () => {
         if (currentQRCode) {
             currentQRCode.download({ name: "qrcode", extension: "png" });
-            showToast('QR Code downloaded successfully!');
+                showToast('QR Code downloaded successfully!');
         } else {
             showToast('No QR Code to download.', 'error');
         }
@@ -520,8 +535,8 @@ document.addEventListener('DOMContentLoaded', () => {
     generateBatchBtn.addEventListener('click', async () => {
         if (batchEntries.length === 0) {
             showToast('Please upload a CSV file first.', 'error');
-            return;
-        }
+                        return;
+                    }
 
         batchResultsGrid.innerHTML = '';
         batchQRs = [];
@@ -617,6 +632,215 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error downloading batch QR codes:', error);
         }
     });
+
+    // Save to history button click handler
+    saveToHistoryBtn.addEventListener('click', () => {
+        if (latestGeneratedText) {
+            addToHistory(latestGeneratedText);
+            showToast('QR Code saved to history!', 'success');
+                        } else {
+            showToast('No QR code to save.', 'error');
+        }
+    });
+
+    // Initialize history display
+    function updateHistoryDisplay() {
+        historyList.innerHTML = qrHistory.map((item, index) => `
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <div class="flex items-center space-x-4 mb-2">
+                    <div class="qr-code-container w-16 h-16" id="history-qr-${index}"></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-gray-900 dark:text-white truncate" title="${item.text}">${item.text}</p>
+                            <button class="p-1 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 copy-history-text" data-text="${item.text}">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${new Date(item.timestamp).toLocaleString()}</p>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 mt-2">
+                    <button class="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400" onclick="regenerateQR(${index})">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    <button class="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400" onclick="removeFromHistory(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        // Add click handlers for copy buttons
+        document.querySelectorAll('.copy-history-text').forEach(button => {
+            button.addEventListener('click', () => {
+                const text = button.dataset.text;
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('Text copied to clipboard!', 'success');
+                }).catch(() => {
+                    showToast('Failed to copy text.', 'error');
+                });
+            });
+        });
+
+        // Re-render QR codes in history
+        qrHistory.forEach((item, index) => {
+            const qrCode = new QRCodeStyling({
+                width: 64,
+                height: 64,
+                type: "svg",
+                data: item.text,
+                margin: 2,
+                qrOptions: {
+                    errorCorrectionLevel: item.options?.errorCorrection || 'H',
+                },
+                dotsOptions: {
+                    type: item.options?.dotStyle || 'square',
+                    color: item.options?.colorDark || '#000000',
+                },
+                backgroundOptions: {
+                    color: item.options?.colorLight || '#ffffff',
+                }
+            });
+            qrCode.append(document.getElementById(`history-qr-${index}`));
+        });
+    }
+
+    // Add to history
+    function addToHistory(text, options = {}) {
+        const historyItem = {
+            text,
+            timestamp: Date.now(),
+            options: {
+                errorCorrection: qrErrorCorrection.value,
+                dotStyle: qrDotStyle.value,
+                colorDark: qrColorDark.value,
+                colorLight: qrColorLight.value,
+                ...options
+            }
+        };
+
+        // Remove duplicate if exists
+        qrHistory = qrHistory.filter(item => item.text !== text);
+        
+        // Add to beginning of array
+        qrHistory.unshift(historyItem);
+        
+        // Keep only last MAX_HISTORY_ITEMS
+        if (qrHistory.length > MAX_HISTORY_ITEMS) {
+            qrHistory = qrHistory.slice(0, MAX_HISTORY_ITEMS);
+        }
+
+        // Save to localStorage
+        localStorage.setItem('qrHistory', JSON.stringify(qrHistory));
+        
+        // Update display
+        updateHistoryDisplay();
+    }
+
+    // Remove from history
+    window.removeFromHistory = function(index) {
+        qrHistory.splice(index, 1);
+        localStorage.setItem('qrHistory', JSON.stringify(qrHistory));
+        updateHistoryDisplay();
+    };
+
+    // Regenerate QR from history
+    window.regenerateQR = function(index) {
+        const item = qrHistory[index];
+        if (item) {
+            qrInput.value = item.text;
+            if (item.options) {
+                qrErrorCorrection.value = item.options.errorCorrection;
+                qrDotStyle.value = item.options.dotStyle;
+                qrColorDark.value = item.options.colorDark;
+                qrColorLight.value = item.options.colorLight;
+            }
+        generateQRCode();
+    }
+    };
+
+    // Clear history
+    clearHistoryBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear the QR code history?')) {
+            qrHistory = [];
+            localStorage.removeItem('qrHistory');
+            updateHistoryDisplay();
+        }
+    });
+
+    // Share functionality
+    shareBtn.addEventListener('click', () => {
+        shareOptions.classList.toggle('hidden');
+    });
+
+    // Close share options when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!shareBtn.contains(e.target) && !shareOptions.contains(e.target)) {
+            shareOptions.classList.add('hidden');
+        }
+    });
+
+    // Handle share options
+    document.querySelectorAll('.share-option').forEach(button => {
+        button.addEventListener('click', async () => {
+            const platform = button.dataset.platform;
+            const text = latestGeneratedText;
+            const qrCode = currentQRCode;
+            
+            if (!qrCode) {
+                showToast('No QR code to share.', 'error');
+                return;
+            }
+
+            try {
+                const svg = await qrCode.getRawData();
+                const blob = new Blob([svg], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+
+                let shareUrl;
+                switch (platform) {
+                    case 'twitter':
+                        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+                        break;
+                    case 'facebook':
+                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+                        break;
+                    case 'linkedin':
+                        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+                        break;
+                    case 'email':
+                        shareUrl = `mailto:?subject=QR Code&body=${encodeURIComponent(text)}&attachment=${encodeURIComponent(url)}`;
+                        break;
+                    case 'whatsapp':
+                        shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+                        break;
+                }
+
+                if (shareUrl) {
+                    window.open(shareUrl, '_blank');
+                }
+            } catch (error) {
+                console.error('Error sharing QR code:', error);
+                showToast('Error sharing QR code.', 'error');
+            }
+        });
+    });
+
+    // Modify generateQRCode function to show save button
+    const originalGenerateQRCode = generateQRCode;
+    generateQRCode = function() {
+        originalGenerateQRCode();
+        if (latestGeneratedText) {
+            saveToHistoryBtn.classList.remove('hidden');
+            saveToHistoryBtn.style.opacity = '1';
+        } else {
+            saveToHistoryBtn.classList.add('hidden');
+            saveToHistoryBtn.style.opacity = '0';
+        }
+    };
+
+    // Initialize history display
+    updateHistoryDisplay();
 });
 
 function loadAds() {
