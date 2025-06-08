@@ -11,8 +11,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoPreview = document.getElementById('logoPreview');
     const qrLogoSize = document.getElementById('qrLogoSize');
     const qrLogoSizeValue = document.getElementById('qrLogoSizeValue');
+    const qrLoadingSpinner = document.getElementById('qrLoadingSpinner');
     const toastContainer = document.createElement('div');
     
+    // New elements for QR code styling
+    const qrDotStyle = document.getElementById('qrDotStyle');
+    const qrCornersSquareStyle = document.getElementById('qrCornersSquareStyle');
+    const qrCornersDotStyle = document.getElementById('qrCornersDotStyle');
+    // New elements for gradient dot styling
+    const qrDotColorType = document.getElementById('qrDotColorType');
+    const qrDotGradientOptions = document.getElementById('qrDotGradientOptions');
+    const qrDotColorGradientType = document.getElementById('qrDotColorGradientType');
+    const qrDotColorGradientRotation = document.getElementById('qrDotColorGradientRotation');
+    const qrDotColorGradientStart = document.getElementById('qrDotColorGradientStart');
+    const qrDotColorGradientEnd = document.getElementById('qrDotColorGradientEnd');
+
     // New elements for QR code types
     const qrCodeType = document.getElementById('qrCodeType');
     const textInputSection = document.getElementById('textInputSection');
@@ -40,6 +53,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(toastContainer);
     
     let html5QrcodeScanner; // Declare scanner instance globally (within DOMContentLoaded scope)
+    let currentQRCode; // Declare a variable to hold the QRCodeStyling instance
+    let latestGeneratedText = ''; // New: To store the latest generated QR code content
+
+    // New elements for border/frame styling
+    const qrBorderEnabled = document.getElementById('qrBorderEnabled');
+    const qrBorderOptions = document.getElementById('qrBorderOptions');
+    const qrBorderColor = document.getElementById('qrBorderColor');
+    const qrBorderWidth = document.getElementById('qrBorderWidth');
+    const qrBorderRadius = document.getElementById('qrBorderRadius');
 
     function initializeScanner() {
         if (!html5QrcodeScanner) { // Only initialize if not already initialized
@@ -218,9 +240,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function generateQRCode() {
-        if (typeof QRCode === 'undefined') {
-            console.error('QRCode library is not defined. Cannot generate QR code.');
-            showToast('QR Code library not loaded. Please try refreshing.', 'error');
+        qrLoadingSpinner.classList.remove('hidden'); // Show spinner
+        
+        if (typeof QRCodeStyling === 'undefined') {
+            console.error('QRCodeStyling library is not defined. Cannot generate QR code.');
+            showToast('QR Code Styling library not loaded. Please try refreshing.', 'error');
+            qrLoadingSpinner.classList.add('hidden'); // Hide spinner on error
             return;
         }
 
@@ -234,8 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = wifiPassword.value.trim();
             const encryption = wifiEncryption.value;
             if (!ssid) {
-                showToast('Please enter Wi-Fi SSID', 'error');
-                return;
+                // Do not show a toast for empty SSID on initial load or type switch
+                // qrLoadingSpinner.classList.add('hidden');
+                // return;
             }
             text = `WIFI:S:${ssid};T:${encryption};P:${password};;`;
         } else if (selectedType === 'contact') {
@@ -245,8 +271,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const org = contactOrg.value.trim();
 
             if (!name && !phone && !email && !org) {
-                showToast('Please enter at least one contact detail', 'error');
-                return;
+                // Do not show a toast for empty contact details on initial load or type switch
+                // qrLoadingSpinner.classList.add('hidden');
+                // return;
             }
 
             text = `BEGIN:VCARD\nVERSION:3.0\n`;
@@ -256,121 +283,138 @@ document.addEventListener('DOMContentLoaded', () => {
             if (org) text += `ORG:${org}\n`;
             text += `END:VCARD`;
         }
-
+        
+        // If text is empty, clear the display and hide buttons/spinner
         if (!text) {
-            // If text is empty, clear the display and hide buttons, do not show an error toast.
             qrDisplay.innerHTML = '';
             downloadBtn.classList.add('hidden');
             copyBtn.classList.add('hidden');
+            downloadBtn.style.opacity = '0';
+            copyBtn.style.opacity = '0';
+            qrLoadingSpinner.classList.add('hidden');
             return;
         }
 
-        // Clear previous QR code and logo
-        qrDisplay.innerHTML = '';
+        latestGeneratedText = text; // Store the generated text
 
         // Get selected options
         const size = parseInt(qrSize.value);
         const errorCorrection = qrErrorCorrection.value;
         const colorDark = qrColorDark.value;
         const colorLight = qrColorLight.value;
-        const logoDataUrl = logoPreview.src; // Get the data URL from the preview image
+        const logoDataUrl = logoPreview.src;
         const logoSizePercentage = parseInt(qrLogoSize.value) / 100;
+        const dotStyle = qrDotStyle.value;
+        const cornersSquareStyle = qrCornersSquareStyle.value;
+        const cornersDotStyle = qrCornersDotStyle.value;
+        const dotColorType = qrDotColorType.value;
+        const dotColorGradientType = qrDotColorGradientType.value;
+        const dotColorGradientRotation = parseInt(qrDotColorGradientRotation.value);
+        const dotColorGradientStart = qrDotColorGradientStart.value;
+        const dotColorGradientEnd = qrDotColorGradientEnd.value;
 
-        // Create QR code
-        const qr = new QRCode(qrDisplay, {
-            text: text,
+        const borderEnabled = qrBorderEnabled.checked;
+        const borderColor = qrBorderColor.value;
+        const borderWidth = parseInt(qrBorderWidth.value);
+        const borderRadius = parseInt(qrBorderRadius.value);
+
+        // Clear previous QR code if it exists
+        if (currentQRCode) {
+            qrDisplay.innerHTML = ''; // Clear the display container
+        }
+
+        const dotsOptions = {};
+        if (dotColorType === 'gradient') {
+            dotsOptions.gradient = {
+                type: dotColorGradientType,
+                rotation: (dotColorGradientRotation * Math.PI) / 180, // Convert degrees to radians
+                colorStops: [
+                    { offset: 0, color: dotColorGradientStart },
+                    { offset: 1, color: dotColorGradientEnd }
+                ]
+            };
+        } else {
+            dotsOptions.color = colorDark;
+        }
+        dotsOptions.type = dotStyle;
+
+        currentQRCode = new QRCodeStyling({
             width: size,
             height: size,
-            colorDark: colorDark,
-            colorLight: colorLight,
-            correctLevel: QRCode.CorrectLevel[errorCorrection]
+            type: "svg", // Changed to SVG for custom extensions
+            data: text,
+            image: logoDataUrl && !logoPreview.classList.contains('hidden') ? logoDataUrl : undefined,
+            margin: 10,
+            qrOptions: {
+                errorCorrectionLevel: errorCorrection,
+            },
+            dotsOptions: dotsOptions,
+            backgroundOptions: {
+                color: colorLight,
+            },
+            imageOptions: {
+                crossOrigin: "anonymous",
+                margin: 5,
+                imageSize: logoSizePercentage,
+            },
+            cornersSquareOptions: {
+                color: colorDark,
+                type: cornersSquareStyle,
+            },
+            cornersDotOptions: {
+                color: colorDark,
+                type: cornersDotStyle,
+            }
         });
 
-        // After QR code is generated, get the canvas element and center it
-        const qrCanvas = qrDisplay.querySelector('canvas');
-        if (qrCanvas) {
-            qrCanvas.style.display = 'block';
-            qrCanvas.style.margin = '0 auto';
-        }
-
-        // Add logo if URL is provided
-        if (logoDataUrl && !logoPreview.classList.contains('hidden')) {
-            const img = document.createElement('img');
-            img.src = logoDataUrl;
-            img.alt = 'QR Code Logo';
-            img.style.position = 'absolute';
-            img.style.width = `${size * logoSizePercentage}px`; // Use logoSizePercentage
-            img.style.height = `${size * logoSizePercentage}px`; // Use logoSizePercentage
-            img.style.top = '50%';
-            img.style.left = '50%';
-            img.style.transform = 'translate(-50%, -50%)';
-            img.style.zIndex = '10';
-            
-            // Ensure the qrDisplay container is positioned for absolute children
-            qrDisplay.style.position = 'relative';
-
-            img.onload = () => {
-                qrDisplay.appendChild(img);
+        if (borderEnabled) {
+            const borderExtension = (svg) => {
+                const border = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                const borderAttributes = {
+                    "fill": "none",
+                    "x": 0,
+                    "y": 0,
+                    "width": size + 20, // size + 2 * margin
+                    "height": size + 20, // size + 2 * margin
+                    "stroke": borderColor,
+                    "stroke-width": borderWidth,
+                    "rx": borderRadius,
+                    "ry": borderRadius,
+                };
+                Object.keys(borderAttributes).forEach(attribute => {
+                    border.setAttribute(attribute, borderAttributes[attribute]);
+                });
+                svg.appendChild(border);
             };
-            img.onerror = () => {
-                showToast('Failed to load logo image. Please check the file.', 'error');
-            };
+            currentQRCode.applyExtension(borderExtension);
         }
+        
+        currentQRCode.append(qrDisplay);
 
-        downloadBtn.classList.remove('hidden');
-        copyBtn.classList.remove('hidden');
-        showToast('QR Code generated successfully!');
+        // Hide spinner and show buttons after a short delay to ensure rendering
+        setTimeout(() => {
+            qrLoadingSpinner.classList.add('hidden');
+            downloadBtn.classList.remove('hidden');
+            copyBtn.classList.remove('hidden');
+            downloadBtn.style.opacity = '1';
+            copyBtn.style.opacity = '1';
+            showToast('QR Code generated successfully!');
+        }, 100); // Give a bit more time for rendering before hiding spinner
     }
 
+    // Update download logic to use the new library's method
     downloadBtn.addEventListener('click', () => {
-        const img = qrDisplay.querySelector('img');
-        if (img) {
-            // For download, if logo is present, we need to create a canvas composite
-            if (qrDisplay.querySelector('img[alt="QR Code Logo"]')) {
-                const qrCanvas = qrDisplay.querySelector('canvas');
-                if (qrCanvas) {
-                    const tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = qrCanvas.width;
-                    tempCanvas.height = qrCanvas.height;
-                    const ctx = tempCanvas.getContext('2d');
-
-                    ctx.drawImage(qrCanvas, 0, 0);
-                    
-                    const logoImg = qrDisplay.querySelector('img[alt="QR Code Logo"]');
-                    if (logoImg) {
-                        // Calculate logo position and size relative to QR code canvas
-                        const logoWidth = logoImg.width;
-                        const logoHeight = logoImg.height;
-                        const logoX = (qrCanvas.width - logoWidth) / 2;
-                        const logoY = (qrCanvas.height - logoHeight) / 2;
-                        ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
-                    }
-                    
-                    const link = document.createElement('a');
-                    link.download = 'qrcode_with_logo.png';
-                    link.href = tempCanvas.toDataURL('image/png');
-                    link.click();
-                    showToast('QR Code with logo downloaded successfully!');
-                } else {
-                    showToast('QR Code canvas not found for download.', 'error');
-                }
-            } else {
-                // Original download logic if no logo
-                const link = document.createElement('a');
-                link.download = 'qrcode.png';
-                link.href = img.src;
-                link.click();
-                showToast('QR Code downloaded successfully!');
-            }
+        if (currentQRCode) {
+            currentQRCode.download({ name: "qrcode", extension: "png" });
+            showToast('QR Code downloaded successfully!');
         } else {
             showToast('No QR Code to download.', 'error');
         }
     });
 
     copyBtn.addEventListener('click', () => {
-        const text = qrInput.value.trim();
-        if (text) {
-            navigator.clipboard.writeText(text)
+        if (latestGeneratedText) {
+            navigator.clipboard.writeText(latestGeneratedText)
                 .then(() => showToast('Text copied to clipboard!'))
                 .catch(err => showToast('Failed to copy text: ' + err, 'error'));
         } else {
@@ -378,12 +422,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initial call to set correct section visibility
+    // Event listeners for all options to regenerate QR code
+    qrInput.addEventListener('input', generateQRCode);
+    qrCodeType.addEventListener('change', () => {
+        toggleInputSections(); // This also calls generateQRCode
+    });
+    qrSize.addEventListener('change', generateQRCode);
+    qrErrorCorrection.addEventListener('change', generateQRCode);
+    qrColorDark.addEventListener('input', generateQRCode);
+    qrColorLight.addEventListener('input', generateQRCode);
+    qrLogoFile.addEventListener('change', generateQRCode);
+    qrLogoSize.addEventListener('input', generateQRCode);
+    qrDotStyle.addEventListener('change', generateQRCode);
+    qrCornersSquareStyle.addEventListener('change', generateQRCode);
+    qrCornersDotStyle.addEventListener('change', generateQRCode);
+    
+    // Event listener for Dot Color Type to show/hide gradient options
+    qrDotColorType.addEventListener('change', () => {
+        if (qrDotColorType.value === 'gradient') {
+            qrDotGradientOptions.classList.remove('hidden');
+        } else {
+            qrDotGradientOptions.classList.add('hidden');
+        }
+        generateQRCode();
+    });
+
+    // Event listeners for gradient options to regenerate QR code
+    qrDotColorGradientType.addEventListener('change', generateQRCode);
+    qrDotColorGradientRotation.addEventListener('input', generateQRCode);
+    qrDotColorGradientStart.addEventListener('input', generateQRCode);
+    qrDotColorGradientEnd.addEventListener('input', generateQRCode);
+
+    // Event listener for border enabled checkbox
+    qrBorderEnabled.addEventListener('change', () => {
+        if (qrBorderEnabled.checked) {
+            qrBorderOptions.classList.remove('hidden');
+        } else {
+            qrBorderOptions.classList.add('hidden');
+        }
+        generateQRCode();
+    });
+
+    // Event listeners for border options
+    qrBorderColor.addEventListener('input', generateQRCode);
+    qrBorderWidth.addEventListener('input', generateQRCode);
+    qrBorderRadius.addEventListener('input', generateQRCode);
+
+    // Initial call to set correct section visibility and generate QR code
     toggleInputSections();
-
-    // Initial QR code generation on page load
-    generateQRCode();
-
+    generateQRCode(); // Initial generation on page load
+    
 });
 
 function loadAds() {

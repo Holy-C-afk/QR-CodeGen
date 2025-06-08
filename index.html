@@ -73,9 +73,14 @@
         }
         .feature-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
         .dark .feature-card {
             background: #20203a;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+        .dark .feature-card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
         }
         .light .feature-card {
             background: linear-gradient(145deg, #ffffff, #f5f5f5);
@@ -88,24 +93,24 @@
 
     <!-- Header -->
     <header class="text-center py-8">
-        <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">QR Code Generator</h1>
-        <p class="text-gray-600 dark:text-gray-400">Create, Scan, and Share QR Codes Instantly</p>
+        <h1 class="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">QR Code Generator</h1>
+        <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">Create, Scan, and Share QR Codes Instantly</p>
     </header>
 
     <!-- Features Section -->
-    <div class="max-w-6xl mx-auto px-4 mb-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="feature-card p-6 rounded-xl shadow-lg">
+            <div class="feature-card p-6 rounded-xl shadow-lg hover:shadow-xl">
                 <div class="text-2xl mb-2">🎨</div>
                 <h3 class="text-xl font-semibold mb-2">Customizable</h3>
                 <p class="text-gray-600 dark:text-gray-400">Create QR codes with custom colors and styles</p>
             </div>
-            <div class="feature-card p-6 rounded-xl shadow-lg">
+            <div class="feature-card p-6 rounded-xl shadow-lg hover:shadow-xl">
                 <div class="text-2xl mb-2">📱</div>
                 <h3 class="text-xl font-semibold mb-2">Mobile Ready</h3>
                 <p class="text-gray-600 dark:text-gray-400">Scan QR codes directly from your device</p>
             </div>
-            <div class="feature-card p-6 rounded-xl shadow-lg">
+            <div class="feature-card p-6 rounded-xl shadow-lg hover:shadow-xl">
                 <div class="text-2xl mb-2">⚡</div>
                 <h3 class="text-xl font-semibold mb-2">Instant</h3>
                 <p class="text-gray-600 dark:text-gray-400">Generate and download QR codes in seconds</p>
@@ -114,10 +119,10 @@
     </div>
 
     <!-- Main Content -->
-    <div class="min-h-screen flex justify-center p-4">
+    <div class="min-h-screen flex justify-center p-4 sm:p-6 lg:p-8">
         <!-- Left Ad Container -->
         <div class="lg:flex flex-col items-center justify-center w-1/5 p-4 relative opacity-0 lg:opacity-100 invisible lg:visible" style="min-width: 300px; min-height: 600px;">
-            <div class="bg-gray-100 dark:bg-[#20203a] w-full h-full flex items-center justify-center rounded-lg shadow-md">
+            <div class="bg-gray-100 dark:bg-[#20203a] w-full h-full flex items-center justify-center rounded-lg shadow-lg border border-gray-700">
                 <!-- AdSense code commented out for local development -->
                 <!--
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6719104770577165"
@@ -137,24 +142,24 @@
         </div>
 
         <!-- Main Content Area -->
-        <div class="bg-gray-100 dark:bg-[#20203a] rounded-2xl shadow-xl p-8 w-full max-w-2xl lg:w-3/5">
+        <div class="bg-gray-100 dark:bg-[#20203a] rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-2xl lg:w-3/5">
             <div class="flex justify-between items-center mb-8">
                 <div class="text-center flex-1">
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">QR Code Generator</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">QR Code Generator</h1>
                     <p class="text-gray-600 dark:text-gray-400">Create QR codes for your text, URLs, or contact information</p>
                 </div>
                 <div class="flex space-x-4">
-                    <button id="generateModeBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">Generate</button>
-                    <button id="scanModeBtn" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-colors">Scan</button>
+                    <button id="generateModeBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Generate</button>
+                    <button id="scanModeBtn" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Scan</button>
                 </div>
             </div>
             
             <div id="generatorSection" class="space-y-6">
-                <div class="input-section">
+                <div class="input-section space-y-4">
                     <div class="relative">
                         <div class="mb-4">
                             <label for="qrCodeType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">QR Code Type</label>
-                            <select id="qrCodeType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg">
+                            <select id="qrCodeType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="text">Text / URL</option>
                                 <option value="wifi">Wi-Fi Network</option>
                                 <option value="contact">Contact Information</option>
@@ -173,7 +178,7 @@
                         <div id="wifiInputSection" class="hidden space-y-4">
                             <input type="text" id="wifiSsid" placeholder="SSID (Network Name)" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <input type="password" id="wifiPassword" placeholder="Password" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <select id="wifiEncryption" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg">
+                            <select id="wifiEncryption" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="WPA">WPA/WPA2</option>
                                 <option value="WEP">WEP</option>
                                 <option value="nopass">No Password</option>
@@ -190,11 +195,15 @@
                 </div>
 
                 <div class="qr-section flex flex-col items-center">
-                    <div id="qrDisplay" class="text-center mx-auto mb-4"></div>
+                    <div id="qrDisplay" class="text-center mx-auto mb-4 max-w-sm relative">
+                        <div id="qrLoadingSpinner" class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-[#20203a] rounded-lg hidden">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                        </div>
+                    </div>
                     <div class="flex flex-col sm:flex-row justify-center gap-4">
                         <button 
                             id="downloadBtn" 
-                            class="hidden px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2"
+                            class="hidden px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 opacity-0 transition-opacity duration-500"
                         >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
@@ -203,7 +212,7 @@
                         </button>
                         <button 
                             id="copyBtn" 
-                            class="hidden px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+                            class="hidden px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 opacity-0 transition-opacity duration-500"
                         >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -218,7 +227,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label for="qrSize" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Size</label>
-                            <select id="qrSize" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg">
+                            <select id="qrSize" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="200">Small</option>
                                 <option value="300" selected>Medium</option>
                                 <option value="400">Large</option>
@@ -226,7 +235,7 @@
                         </div>
                         <div>
                             <label for="qrErrorCorrection" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Error Correction</label>
-                            <select id="qrErrorCorrection" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg">
+                            <select id="qrErrorCorrection" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="L">Low (7%)</option>
                                 <option value="M">Medium (15%)</option>
                                 <option value="Q">Quartile (25%)</option>
@@ -234,16 +243,89 @@
                             </select>
                         </div>
                         <div>
+                            <label for="qrDotStyle" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dot Style</label>
+                            <select id="qrDotStyle" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="square">Square</option>
+                                <option value="rounded">Rounded</option>
+                                <option value="dots">Dots</option>
+                                <option value="classy">Classy</option>
+                                <option value="classy-rounded">Classy Rounded</option>
+                                <option value="extra-rounded">Extra Rounded</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="qrCornersSquareStyle" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Corners Square Style</label>
+                            <select id="qrCornersSquareStyle" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="square">Square</option>
+                                <option value="dot">Dot</option>
+                                <option value="extra-rounded">Extra Rounded</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="qrCornersDotStyle" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Corners Dot Style</label>
+                            <select id="qrCornersDotStyle" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="square">Square</option>
+                                <option value="dot">Dot</option>
+                                <option value="rounded">Rounded</option>
+                            </select>
+                        </div>
+                        <div>
                             <label for="qrColorDark" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dark Color</label>
-                            <input type="color" id="qrColorDark" value="#000000" class="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer">
+                            <input type="color" id="qrColorDark" value="#000000" class="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                         <div>
                             <label for="qrColorLight" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Light Color</label>
-                            <input type="color" id="qrColorLight" value="#ffffff" class="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer">
+                            <input type="color" id="qrColorLight" value="#ffffff" class="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label for="qrDotColorType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dot Color Type</label>
+                            <select id="qrDotColorType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="single">Single Color</option>
+                                <option value="gradient">Gradient</option>
+                            </select>
+                        </div>
+                        <div id="qrDotGradientOptions" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 col-span-full">
+                            <div>
+                                <label for="qrDotColorGradientType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gradient Type</label>
+                                <select id="qrDotColorGradientType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="linear">Linear</option>
+                                    <option value="radial">Radial</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="qrDotColorGradientRotation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gradient Rotation (degrees)</label>
+                                <input type="number" id="qrDotColorGradientRotation" value="0" min="0" max="360" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label for="qrDotColorGradientStart" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gradient Start Color</label>
+                                <input type="color" id="qrDotColorGradientStart" value="#000000" class="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label for="qrDotColorGradientEnd" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gradient End Color</label>
+                                <input type="color" id="qrDotColorGradientEnd" value="#4267b2" class="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="qrBorderEnabled" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Add Border</label>
+                            <input type="checkbox" id="qrBorderEnabled" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                        </div>
+                        <div id="qrBorderOptions" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 col-span-full">
+                            <div>
+                                <label for="qrBorderColor" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Border Color</label>
+                                <input type="color" id="qrBorderColor" value="#000000" class="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label for="qrBorderWidth" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Border Width (px)</label>
+                                <input type="number" id="qrBorderWidth" value="10" min="0" max="50" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label for="qrBorderRadius" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Border Radius (px)</label>
+                                <input type="number" id="qrBorderRadius" value="0" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
                         </div>
                         <div>
                             <label for="qrLogoFile" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload Logo (Optional)</label>
-                            <input type="file" id="qrLogoFile" accept="image/*" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <input type="file" id="qrLogoFile" accept="image/*" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:bg-blue-600 file:text-white file:hover:file:bg-blue-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <img id="logoPreview" src="" alt="Logo Preview" class="hidden mt-2 max-w-full h-24 object-contain mx-auto border border-gray-300 dark:border-gray-600 rounded-lg">
                         </div>
                         <div>
@@ -266,14 +348,14 @@
                     <p id="scannedContent" class="text-blue-600 dark:text-blue-400"></p>
                 </div>
                 <div class="flex justify-center mt-4">
-                    <button id="stopScanBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 hidden">Stop Scan</button>
+                    <button id="stopScanBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Stop Scan</button>
                 </div>
             </div>
         </div>
 
         <!-- Right Ad Container -->
         <div class="lg:flex flex-col items-center justify-center w-1/5 p-4 relative opacity-0 lg:opacity-100 invisible lg:visible" style="min-width: 300px; min-height: 600px;">
-            <div class="bg-gray-100 dark:bg-[#20203a] w-full h-full flex items-center justify-center rounded-lg shadow-md">
+            <div class="bg-gray-100 dark:bg-[#20203a] w-full h-full flex items-center justify-center rounded-lg shadow-lg border border-gray-700">
                 <!-- AdSense code commented out for local development -->
                 <!--
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6719104770577165"
@@ -298,7 +380,7 @@
         <p>Made with ❤️ for the community</p>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/qr-code-styling@latest/lib/qr-code-styling.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="script.js"></script>
 </body>
