@@ -63,6 +63,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const qrBorderWidth = document.getElementById('qrBorderWidth');
     const qrBorderRadius = document.getElementById('qrBorderRadius');
 
+    // Batch generation elements
+    const batchFile = document.getElementById('batchFile');
+    const batchPreview = document.getElementById('batchPreview');
+    const batchPreviewContent = document.getElementById('batchPreviewContent');
+    const batchCount = document.getElementById('batchCount');
+    const generateBatchBtn = document.getElementById('generateBatchBtn');
+    const batchResults = document.getElementById('batchResults');
+    const batchResultsGrid = document.getElementById('batchResultsGrid');
+    const downloadBatchBtn = document.getElementById('downloadBatchBtn');
+
+    let batchEntries = [];
+    let batchQRs = [];
+
     function initializeScanner() {
         if (!html5QrcodeScanner) { // Only initialize if not already initialized
             html5QrcodeScanner = new Html5QrcodeScanner(
@@ -472,6 +485,138 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleInputSections();
     generateQRCode(); // Initial generation on page load
     
+    // Handle batch file upload
+    batchFile.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    // Parse CSV content
+                    const content = e.target.result;
+                    batchEntries = content.split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0);
+
+                    // Update preview
+                    batchPreviewContent.innerHTML = batchEntries
+                        .map((entry, index) => `<div class="text-sm text-gray-600 dark:text-gray-400">${index + 1}. ${entry}</div>`)
+                        .join('');
+                    batchCount.textContent = `${batchEntries.length} entries`;
+                    batchPreview.classList.remove('hidden');
+                } catch (error) {
+                    showToast('Error reading CSV file. Please ensure it\'s properly formatted.', 'error');
+                    console.error('Error parsing CSV:', error);
+                }
+            };
+            reader.onerror = () => {
+                showToast('Error reading file.', 'error');
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // Generate batch QR codes
+    generateBatchBtn.addEventListener('click', async () => {
+        if (batchEntries.length === 0) {
+            showToast('Please upload a CSV file first.', 'error');
+            return;
+        }
+
+        batchResultsGrid.innerHTML = '';
+        batchQRs = [];
+        qrLoadingSpinner.classList.remove('hidden');
+
+        try {
+            // Generate QR codes for each entry
+            for (const entry of batchEntries) {
+                const qrCode = new QRCodeStyling({
+                    width: parseInt(qrSize.value),
+                    height: parseInt(qrSize.value),
+                    type: "svg",
+                    data: entry,
+                    margin: 10,
+                    qrOptions: {
+                        errorCorrectionLevel: qrErrorCorrection.value,
+                    },
+                    dotsOptions: {
+                        type: qrDotStyle.value,
+                        color: qrColorDark.value,
+                    },
+                    backgroundOptions: {
+                        color: qrColorLight.value,
+                    },
+                    cornersSquareOptions: {
+                        type: qrCornersSquareStyle.value,
+                        color: qrColorDark.value,
+                    },
+                    cornersDotOptions: {
+                        type: qrCornersDotStyle.value,
+                        color: qrColorDark.value,
+                    }
+                });
+
+                batchQRs.push({ qrCode, text: entry });
+            }
+
+            // Display QR codes
+            batchResultsGrid.innerHTML = batchQRs.map((item, index) => `
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                    <div class="qr-code-container mb-2" id="batch-qr-${index}"></div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400 truncate" title="${item.text}">${item.text}</div>
+                </div>
+            `).join('');
+
+            // Append QR codes to containers
+            batchQRs.forEach((item, index) => {
+                item.qrCode.append(document.getElementById(`batch-qr-${index}`));
+            });
+
+            batchResults.classList.remove('hidden');
+            showToast(`Generated ${batchEntries.length} QR codes successfully!`, 'success');
+        } catch (error) {
+            showToast('Error generating QR codes.', 'error');
+            console.error('Error generating batch QR codes:', error);
+        } finally {
+            qrLoadingSpinner.classList.add('hidden');
+        }
+    });
+
+    // Download all batch QR codes
+    downloadBatchBtn.addEventListener('click', async () => {
+        if (batchQRs.length === 0) {
+            showToast('No QR codes to download.', 'error');
+            return;
+        }
+
+        try {
+            // Create a zip file
+            const zip = new JSZip();
+            
+            // Add each QR code to the zip
+            for (let i = 0; i < batchQRs.length; i++) {
+                const { qrCode, text } = batchQRs[i];
+                const svg = await qrCode.getRawData();
+                const fileName = `qr-code-${i + 1}-${text.substring(0, 20).replace(/[^a-z0-9]/gi, '_').toLowerCase()}.svg`;
+                zip.file(fileName, svg);
+            }
+
+            // Generate and download the zip file
+            const content = await zip.generateAsync({ type: 'blob' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = 'qr-codes-batch.zip';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            showToast('Downloaded all QR codes successfully!', 'success');
+        } catch (error) {
+            showToast('Error downloading QR codes.', 'error');
+            console.error('Error downloading batch QR codes:', error);
+        }
+    });
 });
 
 function loadAds() {

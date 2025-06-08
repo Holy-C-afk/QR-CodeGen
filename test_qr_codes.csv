@@ -1,0 +1,20 @@
+https://www.google.com
+https://www.github.com
+https://www.linkedin.com
+https://www.twitter.com
+https://www.youtube.com
+tel:+1234567890
+mailto:test@example.com
+WIFI:S:MyNetwork;T:WPA;P:password123;;
+BEGIN:VCARD
+VERSION:3.0
+FN:John Doe
+TEL:+1234567890
+EMAIL:john@example.com
+ORG:Example Corp
+END:VCARD
+https://maps.google.com/?q=40.7128,-74.0060
+https://www.example.com/product?id=123
+https://www.example.com/event?id=456
+https://www.example.com/coupon?code=SAVE20
+https://www.example.com/contact?ref=123 
