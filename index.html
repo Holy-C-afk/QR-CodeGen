@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200 text-gray-900 dark:text-white">
+    <div class="min-h-screen flex justify-center p-4">
+        <!-- Left Ad Container -->
+        <div class="lg:flex flex-col items-center justify-center w-1/5 p-4 relative opacity-0 lg:opacity-100 invisible lg:visible" style="min-width: 300px; min-height: 600px;">
+            <div class="bg-gray-100 dark:bg-gray-700 w-full h-full flex items-center justify-center rounded-lg shadow-md">
+                <!-- AdSense code commented out for local development -->
+                <!--
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6719104770577165"
+                     crossorigin="anonymous"></script>
+                <ins class="adsbygoogle"
+                     style="display:block; width:100%; height:100%;"
+                     data-ad-client="ca-pub-6719104770577165"
+                     data-ad-slot="1276602775"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true" id="left-ad-slot"></ins>
+                -->
+                <div class="text-center p-4">
+                    <p class="text-gray-600 dark:text-gray-400">Ad Space</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-500">(Ads will appear here on production)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-2xl lg:w-3/5">
+            <div class="flex justify-between items-center mb-8">
+                <div class="text-center flex-1">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">QR Code Generator</h1>
+                    <p class="text-gray-600 dark:text-gray-400">Create QR codes for your text, URLs, or contact information</p>
+                </div>
+                <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="input-section">
+                    <div class="relative">
+                        <div class="mb-4">
+                            <label for="qrCodeType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">QR Code Type</label>
+                            <select id="qrCodeType" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg">
+                                <option value="text">Text / URL</option>
+                                <option value="wifi">Wi-Fi Network</option>
+                                <option value="contact">Contact Information</option>
+                            </select>
+                        </div>
+
+                        <div id="textInputSection" class="flex items-center gap-2">
+                            <input 
+                                type="text" 
+                                id="qrInput" 
+                                placeholder="Enter text or URL..."
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                        </div>
+
+                        <div id="wifiInputSection" class="hidden space-y-4">
+                            <input type="text" id="wifiSsid" placeholder="SSID (Network Name)" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="password" id="wifiPassword" placeholder="Password" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <select id="wifiEncryption" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg">
+                                <option value="WPA">WPA/WPA2</option>
+                                <option value="WEP">WEP</option>
+                                <option value="nopass">No Password</option>
+                            </select>
+                        </div>
+
+                        <div id="contactInputSection" class="hidden space-y-4">
+                            <input type="text" id="contactName" placeholder="Name" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="contactPhone" placeholder="Phone" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="email" id="contactEmail" placeholder="Email" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="contactOrg" placeholder="Organization" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="qr-section">
+                    <div id="qrDisplay" class="text-center mb-4"></div>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <button 
+                            id="downloadBtn" 
+                            class="hidden px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Download QR
+                        </button>
+                        <button 
+                            id="copyBtn" 
+                            class="hidden px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            Copy Text
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">QR Code Options</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="qrSize" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Size</label>
+                            <select id="qrSize" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg">
+                                <option value="200">Small</option>
+                                <option value="300" selected>Medium</option>
+                                <option value="400">Large</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="qrErrorCorrection" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Error Correction</label>
+                            <select id="qrErrorCorrection" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg">
+                                <option value="L">Low (7%)</option>
+                                <option value="M">Medium (15%)</option>
+                                <option value="Q">Quartile (25%)</option>
+                                <option value="H" selected>High (30%)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="qrColorDark" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dark Color</label>
+                            <input type="color" id="qrColorDark" value="#000000" class="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer">
+                        </div>
+                        <div>
+                            <label for="qrColorLight" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Light Color</label>
+                            <input type="color" id="qrColorLight" value="#ffffff" class="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer">
+                        </div>
+                        <div>
+                            <label for="qrLogoFile" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload Logo (Optional)</label>
+                            <input type="file" id="qrLogoFile" accept="image/*" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <img id="logoPreview" src="" alt="Logo Preview" class="hidden mt-2 max-w-full h-24 object-contain mx-auto border border-gray-300 dark:border-gray-600 rounded-lg">
+                        </div>
+                        <div>
+                            <label for="qrLogoSize" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Logo Size (%)</label>
+                            <input type="range" id="qrLogoSize" min="5" max="50" value="25" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                            <span id="qrLogoSizeValue" class="block text-sm text-gray-600 dark:text-gray-400 text-center mt-1">25%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Ad Container -->
+        <div class="lg:flex flex-col items-center justify-center w-1/5 p-4 relative opacity-0 lg:opacity-100 invisible lg:visible" style="min-width: 300px; min-height: 600px;">
+            <div class="bg-gray-100 dark:bg-gray-700 w-full h-full flex items-center justify-center rounded-lg shadow-md">
+                <!-- AdSense code commented out for local development -->
+                <!--
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6719104770577165"
+                     crossorigin="anonymous"></script>
+                <ins class="adsbygoogle"
+                     style="display:block; width:100%; height:100%;"
+                     data-ad-client="ca-pub-6719104770577165"
+                     data-ad-slot="4582919824"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true" id="right-ad-slot"></ins>
+                -->
+                <div class="text-center p-4">
+                    <p class="text-gray-600 dark:text-gray-400">Ad Space</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-500">(Ads will appear here on production)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
